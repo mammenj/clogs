@@ -1,6 +1,7 @@
 package log
 
 import (
+	"fmt"
 	"io"
 	"os"
 
@@ -38,8 +39,10 @@ func newIndex(f *os.File, c Config) (*index, error) {
 		gommap.PROT_READ|gommap.PROT_WRITE,
 		gommap.MAP_SHARED,
 	); err != nil {
+		fmt.Printf("Error getting mmap %v\n", err)
 		return nil, err
 	}
+	fmt.Printf("Got index getting mmap %v\n", idx.file)
 	return idx, nil
 }
 func (i *index) Close() error {
@@ -60,8 +63,10 @@ func (i *index) Read(in int64) (out uint32, pos uint64, err error) {
 	}
 	if in == -1 {
 		out = uint32((i.size / entWidth) - 1)
+		fmt.Printf("Out size for -1 is %v\n", out)
 	} else {
 		out = uint32(in)
+		fmt.Printf("Else Out size is %v\n", out)
 	}
 	pos = uint64(out) * entWidth
 	if i.size < pos+entWidth {
@@ -69,6 +74,7 @@ func (i *index) Read(in int64) (out uint32, pos uint64, err error) {
 	}
 	out = enc.Uint32(i.mmap[pos : pos+offWidth])
 	pos = enc.Uint64(i.mmap[pos+offWidth : pos+entWidth])
+	fmt.Printf("OUT %v, POS %v\n", out,pos)
 	return out, pos, nil
 }
 func (i *index) Write(off uint32, pos uint64) error {
